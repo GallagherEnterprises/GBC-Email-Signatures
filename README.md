@@ -1,2 +1,2 @@
-# GEI-Email-Signatures-V2
-Alternate signature design
+# GBC-Email-Signatures
+Email Signature Generator for GBC employees
