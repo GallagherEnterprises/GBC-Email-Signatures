@@ -3,41 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBC Email Signature Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px; /* Prevents elements from stretching too wide */
+        }
+        input {
+            width: calc(100% - 20px); /* Prevents input from exceeding page width */
+            max-width: 400px; /* Restricts input width for better UI */
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        #signature_output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 <body>
     <h2>GBC Email Signature Generator</h2>
     <div>
         <label for="name">Full Name:</label><br>
-        <input type="text" id="name" name="name" placeholder="Your Name"><br><br>
+        <input type="text" id="name" name="name" placeholder="Your Name"><br>
 
         <label for="cell_number">Cell Number:</label><br>
-        <input type="text" id="cell_number" name="cell_number" placeholder="C-Your Cell Number"><br><br>
+        <input type="text" id="cell_number" name="cell_number" placeholder="C-Your Cell Number" oninput="formatPhoneNumber(this)"><br>
 
         <label for="email_prefix">Email Prefix (before @):</label><br>
-        <input type="text" id="email_prefix" name="email_prefix" placeholder="Your Email Prefix"><br><br>
+        <input type="text" id="email_prefix" name="email_prefix" placeholder="Your Email Prefix"><br>
 
         <button onclick="generateSignature()">Generate Signature</button>
         <button onclick="copyToClipboard()">Copy Signature</button>
     </div>
     
     <h3>Generated Signature:</h3>
-    <div id="signature_output">
-        <!-- Signature will be shown here after user input -->
-    </div>
+    <div id="signature_output"></div>
 
     <script>
-        function generateSignature() {
-            var name = document.getElementById('name').value;
-            var cell_number = document.getElementById('cell_number').value;
-            var email_prefix = document.getElementById('email_prefix').value;
+        // Cache busting
+        const cacheBuster = Date.now();
 
-            var signature = `
+        function generateSignature() {
+            let name = document.getElementById('name').value.trim();
+            let cell_number = document.getElementById('cell_number').value.trim();
+            let email_prefix = document.getElementById('email_prefix').value.trim();
+
+            // Ensure only the prefix before '@' is used
+            if (email_prefix.includes("@")) {
+                email_prefix = email_prefix.split("@")[0];
+            }
+
+            // Generate signature
+            let signature = `
                 <table style="font-family: Helvetica, sans-serif; line-height: 1;">
                     <tr><td style="font-size: 16px; color: #1F4971;">${name}</td></tr>
-                    <tr><td style="font-size: 16px; font-style: oblique; color: #008000; font-weight: bold;">Gallagher Bros. Contractors Ltd.</td></tr>
+                    <tr><td style="font-size: 16px; font-style: italic; font-weight: bold; color: #008000;">Gallagher Bros. Contractors Ltd.</td></tr>
                     <tr><td style="font-size: 14.7px; color: #008000;">C-${cell_number}</td></tr>
                     <tr><td style="font-size: 14.7px; color: #008000;">P-604-531-3156</td></tr>
-                    <tr><td style="font-size: 14.7px; color: #0000FF;"><span><a href="mailto:${email_prefix}@gallagherbros.com" style="text-decoration: none; color: #0000FF;">${email_prefix}@gallagherbros.com</a></span></td></tr>
+                    <tr><td style="font-size: 14.7px; color: #0000FF;"><a href="mailto:${email_prefix}@gallagherbros.com" style="text-decoration: none; color: #0000FF;">${email_prefix}@gallagherbros.com</a></td></tr>
                 </table>
             `;
 
@@ -45,12 +80,12 @@
         }
 
         function copyToClipboard() {
-            var signatureHTML = document.getElementById('signature_output').innerHTML;
-            var tempElement = document.createElement("div");
+            let signatureHTML = document.getElementById('signature_output').innerHTML;
+            let tempElement = document.createElement("div");
             tempElement.innerHTML = signatureHTML;
             document.body.appendChild(tempElement);
 
-            var range = document.createRange();
+            let range = document.createRange();
             range.selectNode(tempElement);
             window.getSelection().removeAllRanges();
             window.getSelection().addRange(range);
@@ -60,6 +95,29 @@
             document.body.removeChild(tempElement);
             alert("Signature copied to clipboard!");
         }
+
+        function formatPhoneNumber(input) {
+            let numbers = input.value.replace(/\D/g, ""); // Remove non-numeric characters
+            if (numbers.length > 10) numbers = numbers.substring(0, 10); // Max 10 digits
+
+            let formatted = "";
+            if (numbers.length > 6) {
+                formatted = `${numbers.substring(0, 3)}-${numbers.substring(3, 6)}-${numbers.substring(6)}`;
+            } else if (numbers.length > 3) {
+                formatted = `${numbers.substring(0, 3)}-${numbers.substring(3)}`;
+            } else {
+                formatted = numbers;
+            }
+
+            input.value = formatted;
+        }
+
+        // Cache busting: Ensure latest version loads
+        (function bustCache() {
+            let script = document.createElement("script");
+            script.src = "script.js?v=" + cacheBuster;
+            document.body.appendChild(script);
+        })();
     </script>
 </body>
 </html>
